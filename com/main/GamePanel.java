@@ -12,15 +12,15 @@ public class GamePanel extends JPanel implements Runnable {
     final int tileSize = originalTileSize * scale; // 48x48
 
     //decide how many tiles vertically x horizontally will be displayed on screen
-    //this decides screen size
 
+    //this decides screen size
     final int maxScreenCol = 16;
     final int maxScreenRow = 12;
     final int screenWidth = tileSize * maxScreenCol; //768px
     final int screenHeight = tileSize * maxScreenRow; //576px
 
     //FPS
-    int FPS = 60 ;
+    int FPS = 90 ;
 
     //Need a gameClock
     Thread gameThread;
@@ -63,47 +63,83 @@ public class GamePanel extends JPanel implements Runnable {
      */
 
     @Override
-    public void run() {
-        //sleep method
-        double drawInterval = 1000000000/FPS ; //basically 1second/FPS (9 zeroes)
-        //draw screen this many times //after every 0.01666 seconds
+//    public void run() {
+//        //SLEEP GAME LOOP METHOD
 
-        double nextDrawTime = System.nanoTime() + drawInterval ; //draw screen again after current time + interval
-        //therefore cap applied
+//        double drawInterval = 1000000000/FPS ; //basically 1second/FPS (9 zeroes)
+//        //draw screen this many times //after every 0.01666 seconds
+//
+//        double nextDrawTime = System.nanoTime() + drawInterval ; //draw screen again after current time + interval
+//        //therefore cap applied
+//
+//        //Creating game loop
+//        while(gameThread != null){
+//
+//            long currentTime = System.nanoTime(); //very small unit , can use milli too
+//            System.out.println(currentTime);
+//
+//
+//
+////            System.out.println("The game loop is running");
+//
+//            //1. UPDATE : update info such as character positions
+//            //2. DRAW : draw the screen with the updated info
+//
+//            update();
+//            repaint(); //calls paintComponent method //yes confusing but yes
+//
+//            try {
+//                double remainingTime = nextDrawTime - System.nanoTime();
+//                remainingTime = remainingTime/1000000; //1 second = 1000 ms and 1,000,000,000 ns
+//                //time remaining until next draw time, and we make the thread sleep until remaining time
+//
+//                if(remainingTime < 0){
+//                    remainingTime = 0 ;  //safety that if incase our update and repaint took more than remaining time, thread womnt sleep
+//                }
+//                Thread.sleep((long)remainingTime); //accepts number in millisecond only
+//
+//                nextDrawTime +=  drawInterval ;
+//            } catch (InterruptedException e) {
+//                throw new RuntimeException(e);
+//            }
+//
+//        }
+//
+//
+//    }
 
-        //Creating game loop
-        while(gameThread != null){
+    public void run(){
 
-            long currentTime = System.nanoTime(); //very small unit , can use milli too
-            System.out.println(currentTime);
+        //DELTA GAME LOOP METHOD
+
+        double drawInterval = 1000000000/FPS;
+        double delta = 0;
+        long lastTime = System.nanoTime();
+        long currentTime;
+        long timer = 0;
+        int drawCount = 0;
 
 
+        while (gameThread != null){
+            currentTime = System.nanoTime();
 
-//            System.out.println("The game loop is running");
+            delta += (currentTime - lastTime) / drawInterval;
+            timer += (currentTime -lastTime);
+            lastTime = currentTime;
 
-            //1. UPDATE : update info such as character positions
-            //2. DRAW : draw the screen with the updated info
-
-            update();
-            repaint(); //calls paintComponent method //yes confusing but yes
-
-            try {
-                double remainingTime = nextDrawTime - System.nanoTime();
-                remainingTime = remainingTime/1000000; //1 second = 1000 ms and 1,000,000,000 ns
-                //time remaining until next draw time, and we make the thread sleep until remaining time
-
-                if(remainingTime < 0){
-                    remainingTime = 0 ;  //safety that if incase our update and repaint took more than remaining time, thread womnt sleep
-                }
-                Thread.sleep((long)remainingTime); //accepts number in millisecond only
-
-                nextDrawTime +=  drawInterval ;
-            } catch (InterruptedException e) {
-                throw new RuntimeException(e);
+            if(delta >= 1){
+                update();
+                repaint();
+                delta--;
+                drawCount++;
             }
 
+            if (timer >= 1000000000){
+                System.out.println("FPS : " + drawCount);
+                drawCount = 0 ;
+                timer = 0;
+            }
         }
-
 
     }
 
