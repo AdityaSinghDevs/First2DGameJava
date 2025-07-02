@@ -19,6 +19,9 @@ public class GamePanel extends JPanel implements Runnable {
     final int screenWidth = tileSize * maxScreenCol; //768px
     final int screenHeight = tileSize * maxScreenRow; //576px
 
+    //FPS
+    int FPS = 60 ;
+
     //Need a gameClock
     Thread gameThread;
 
@@ -49,11 +52,32 @@ public class GamePanel extends JPanel implements Runnable {
         gameThread.start();
     }
 
+    /* USING UPDATE AND PAINTCOMPONENT WE STARTED A GAME LOOP, THAT IS LIKE
+    UPDATE -> PAINT -> UPDATE -> PAINT
+    BUT WE NEED TO PUT CAP TO THIS PROCESS, BECAUSE FOR A MODERN CPU,
+    ITS JUST A SIMPLE WHITE RECTANGLE RENDER, HENCE IT CAN DO IT MILLION TIMES PER SECOND, ONCE INITIATED
+    THEREFORE, MAKING THE RECTANGLE DISSAPEAR, EVEN THOUGH ITS THERE !
+    NEED TO SET THE FPS LIMIT
+
+    and for that we need to figure out the current time and time taken between update and repaint
+     */
+
     @Override
     public void run() {
-        //Creating game loop
+        //sleep method
+        double drawInterval = 1000000000/FPS ; //basically 1second/FPS (9 zeroes)
+        //draw screen this many times //after every 0.01666 seconds
 
+        double nextDrawTime = System.nanoTime() + drawInterval ; //draw screen again after current time + interval
+        //therefore cap applied
+
+        //Creating game loop
         while(gameThread != null){
+
+            long currentTime = System.nanoTime(); //very small unit , can use milli too
+            System.out.println(currentTime);
+
+
 
 //            System.out.println("The game loop is running");
 
@@ -63,13 +87,31 @@ public class GamePanel extends JPanel implements Runnable {
             update();
             repaint(); //calls paintComponent method //yes confusing but yes
 
+            try {
+                double remainingTime = nextDrawTime - System.nanoTime();
+                remainingTime = remainingTime/1000000; //1 second = 1000 ms and 1,000,000,000 ns
+                //time remaining until next draw time, and we make the thread sleep until remaining time
+
+                if(remainingTime < 0){
+                    remainingTime = 0 ;  //safety that if incase our update and repaint took more than remaining time, thread womnt sleep
+                }
+                Thread.sleep((long)remainingTime); //accepts number in millisecond only
+
+                nextDrawTime +=  drawInterval ;
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            }
+
         }
 
 
     }
 
+
+
     public  void update(){
     //to update info
+
         if(keyH.upPressed == true){
             playerY = playerY - playerSpeed;
         }
