@@ -1,4 +1,6 @@
-package com.main;
+package src.main;
+
+import src.entity.Player;
 
 import javax.swing.*;
 import java.awt.*;
@@ -9,7 +11,7 @@ public class GamePanel extends JPanel implements Runnable {
     final int originalTileSize = 16; // 16x16
     final int scale = 3; //scale for computer screen size
 
-    final int tileSize = originalTileSize * scale; // 48x48
+    public final int tileSize = originalTileSize * scale; // 48x48
 
     //decide how many tiles vertically x horizontally will be displayed on screen
 
@@ -20,13 +22,14 @@ public class GamePanel extends JPanel implements Runnable {
     final int screenHeight = tileSize * maxScreenRow; //576px
 
     //FPS
-    int FPS = 90 ;
+    int FPS = 60 ;
 
     //Need a gameClock
     Thread gameThread;
 
     //Need the keyhandler
     KeyHandler keyH  = new KeyHandler();
+    Player player = new Player(this, keyH);
 
     //Set player's default position
     //IN JAVA UPPER LEFT CORNER IS X:0 Y:0
@@ -112,7 +115,7 @@ public class GamePanel extends JPanel implements Runnable {
 
         //DELTA GAME LOOP METHOD
 
-        double drawInterval = 1000000000/FPS;
+        double drawInterval = 1000000000/FPS;  //ns per frame
         double delta = 0;
         long lastTime = System.nanoTime();
         long currentTime;
@@ -148,20 +151,9 @@ public class GamePanel extends JPanel implements Runnable {
     public  void update(){
     //to update info
 
-        if(keyH.upPressed == true){
-            playerY = playerY - playerSpeed;
+     player.update();
         }
-        else if (keyH.downPressed == true){
-            playerY += playerSpeed;
-        }
-        else if (keyH.leftPressed == true){
-            playerX -= playerSpeed;
-        }
-        else if (keyH.rightPressed == true) {
-            playerX +=playerSpeed;
 
-        }
-    }
 
     public void paintComponent(Graphics g){
         //graphics and paintcomponent pre built class and method in java
@@ -174,8 +166,7 @@ public class GamePanel extends JPanel implements Runnable {
         //extends graphics to provide more control over geometry, coordinate and transformation
         //color management, and text layout
 
-        g2.setColor(Color.white);
-        g2.fillRect(playerX, playerY, tileSize, tileSize );
+        player.draw(g2);
         g2.dispose(); //saves memory
     }
 }
